@@ -1,0 +1,11 @@
+{
+  "welcome": "Welcome to the {{target}} extension!",
+  "iWouldLikeAFreeGiftWithMyOrder": "I would like a free gift with my order",
+  "addAFreeGiftToMyOrder": "Add a free gift to my order",
+  "metafieldChangesAreNotSupported": "Cart metafield changes are not supported in this order",
+  "discountNotice": "Discount Notice",
+  "discountCode": "Discount Code",
+  "enterCouponCode": "Enter coupon code",
+  "apply": "Apply",
+  "failedToApplyDiscountCode": "Failed to apply discount code"
+}

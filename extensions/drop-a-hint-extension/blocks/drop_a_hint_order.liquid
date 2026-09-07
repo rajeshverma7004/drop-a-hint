@@ -1,0 +1,151 @@
+{%- comment -%}
+  Drop A Hint — Order Status Block
+  Runs on the customers/order page (account order detail view).
+  Detects if the customer arrived via a referral link (dah_ref token in URL,
+  localStorage, or sessionStorage), and notifies the app to process the referral.
+{%- endcomment -%}
+
+<div id="dah-order-block-{{ block.id }}" style="display:none" aria-hidden="true"></div>
+
+<script>
+  (function() {
+    'use strict';
+
+    var blockId        = '{{ block.id }}';
+    var orderId        = '{{ order.id }}';
+    var orderNumber    = '{{ order.order_number }}';
+    var customerEmail  = '{{ customer.email }}';
+    var customerId     = '{{ customer.id }}';
+    var financialStatus = '{{ order.financial_status }}';
+
+    // Collect product IDs from the order line items
+    var lineItemProductIds = [];
+    {% for line_item in order.line_items %}
+      lineItemProductIds.push('{{ line_item.product_id }}');
+    {% endfor %}
+
+    // Collect product titles from the order line items
+    var lineItemProductTitles = [];
+    {% for line_item in order.line_items %}
+      lineItemProductTitles.push('{{ line_item.title | escape }}');
+    {% endfor %}
+
+    // Collect variant IDs from the order line items
+    var lineItemVariantIds = [];
+    {% for line_item in order.line_items %}
+      lineItemVariantIds.push('{{ line_item.variant_id }}');
+    {% endfor %}
+
+    console.log('[Drop A Hint] Order page block running.');
+    console.log('  Block ID         :', blockId);
+    console.log('  Order ID         :', orderId);
+    console.log('  Order Number     :', orderNumber);
+    console.log('  Customer ID      :', customerId || '(guest)');
+    console.log('  Customer Email   :', customerEmail || '(none)');
+    console.log('  Financial Status :', financialStatus, '(reward triggers regardless)');
+    console.log('  Line Item PIDs   :', lineItemProductIds.join(', ') || '(none)');
+    console.log('  Line Item Titles :', lineItemProductTitles.join(', ') || '(none)');
+
+    // Idempotency: don't fire twice for the same order
+    var processedKey = 'dah_processed_' + orderId;
+    try {
+      if (sessionStorage.getItem(processedKey) || localStorage.getItem(processedKey)) {
+        console.log('[Drop A Hint] Order ' + orderId + ' already processed by this session. Skipping.');
+        return;
+      }
+    } catch(e) {}
+
+    var getCookie = function(name) {
+      try {
+        var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        if (match) return decodeURIComponent(match[2]);
+      } catch(e) {}
+      return null;
+    };
+
+    var referralToken = null;
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      referralToken = urlParams.get('dah_ref')
+        || urlParams.get('ref')
+        || localStorage.getItem('dah_ref_token')
+        || sessionStorage.getItem('dah_ref')
+        || getCookie('dah_ref')
+        || null;
+    } catch(e) {
+      console.warn('[Drop A Hint] Could not read referral token:', e);
+    }
+
+    console.log('[Drop A Hint] Referral token found:', referralToken || '(none — will match by email/customer ID)');
+
+    // -------------------------------------------------------------------------
+    // Build order payload and POST to complete_order endpoint
+    // -------------------------------------------------------------------------
+    var orderPayload = {
+      order: {
+        id:               orderId,
+        order_number:     orderNumber,
+        email:            customerEmail,
+        financial_status: financialStatus,
+        customer: customerId ? { id: customerId, email: customerEmail } : null,
+        line_items: lineItemProductIds.map(function(pid, idx) {
+          return {
+            product_id: pid,
+            title:      lineItemProductTitles[idx] || null,
+            variant_id: lineItemVariantIds[idx] || null,
+          };
+        }),
+        note_attributes: referralToken
+          ? [{ name: 'dah_ref', value: referralToken }]
+          : [],
+      }
+    };
+
+    console.log('[Drop A Hint] Calling complete_order with payload:', JSON.stringify(orderPayload));
+
+    fetch('/apps/drop-a-hint?action=complete_order', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(orderPayload),
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success) {
+        console.log('[Drop A Hint] ✅ Referral completed successfully!');
+        console.log('  Referral ID  :', data.referral?.id);
+        console.log('  Order Status :', data.referral?.orderStatus);
+        console.log('  Coupon Sent  :', data.referral?.couponSent);
+
+        // Mark as processed in both storages so duplicate page views don't re-trigger
+        try {
+          sessionStorage.setItem(processedKey, '1');
+          localStorage.setItem(processedKey, '1');
+        } catch(e) {}
+
+        // Clear the referral token from both storages once used
+        try {
+          sessionStorage.removeItem('dah_ref');
+          localStorage.removeItem('dah_ref_token');
+        } catch(e) {}
+      } else {
+        // No matching referral for this order — normal for non-referred orders
+        console.log('[Drop A Hint] complete_order response:', data.error || JSON.stringify(data));
+      }
+    })
+    .catch(function(err) {
+      console.warn('[Drop A Hint] complete_order request failed:', err);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Drop a Hint Order",
+  "target": "section",
+  "enabled_on": {
+    "templates": ["customers/order"]
+  },
+  "settings": []
+}
+{% endschema %}
+

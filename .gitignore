@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Local SQLite databases & journals
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.db
+*.db-journal
+/prisma/dev.sqlite
+/prisma/dev.sqlite-journal
+/prisma/*.sqlite
+/prisma/*.sqlite-journal
+database.sqlite
+
+# Build outputs & caches
+/.cache/
+/build/
+/app/build/
+/public/build/
+/public/_dev/
+/app/public/build/
+/dist/
+.react-router/
+
+# Shopify CLI & dev files
+.shopify/
+.shopify/*
+.shopify.lock
+/extensions/*/dist/
+/extensions/*/.shopify/
+
+# Scratch & local debug scripts
+scratch/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE & editor files
+.cursor/
+.gemini/
+.mcp.json
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS & system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/

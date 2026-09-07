@@ -1,0 +1,20 @@
+api_version = "2026-07"
+
+[[extensions]]
+name = "Coupon Code Checkout Validator"
+handle = "coupon-code-checkout-message"
+type = "ui_extension"
+uid = "c9f62966-ac6b-b739-7c99-ee5cab3579ed75eabf0e"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.checkout.reductions.render-after"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.checkout.block.render"
+
+[extensions.capabilities]
+api_access = true
+network_access = true
+block_progress = true

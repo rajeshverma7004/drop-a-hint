@@ -1,0 +1,668 @@
+/* ==========================================================================
+   Drop A Hint — High-Fidelity Polaris Design System & Tokens
+   ========================================================================== */
+
+:root {
+  /* Brand / Primary Accent */
+  --color-primary: #008790;
+  --color-primary-hover: #00737a;
+  --color-primary-active: #006066;
+  --color-primary-focus: rgba(0, 135, 144, 0.25);
+
+  /* Neutrals & Text */
+  --color-text: #111111;
+  --color-text-secondary: #555555;
+  --color-text-muted: #8a8a8a;
+  --color-text-subdued: #6d7175;
+
+  /* Surfaces & Backgrounds */
+  --color-background: #f7f7f7;
+  --color-surface: #ffffff;
+  --color-surface-subdued: #f7f7f7;
+  --color-surface-hover: #fafafa;
+
+  /* Borders */
+  --color-border: #e5e5e5;
+  --color-border-card: #eeeeee;
+  --color-border-strong: #c9c9c9;
+
+  /* Status Colors */
+  --color-success-background: #e4f7f1;
+  --color-success-text: #147d70;
+  --color-draft-background: #f1f1f1;
+  --color-draft-text: #666666;
+  --color-danger-background: #fff0f1;
+  --color-danger-background-hover: #ffe0e2;
+  --color-danger: #e51c23;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Shadows */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-dropdown: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-modal: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Base resets & typography */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-background);
+  font-family: var(--font-family);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Application Header (69px high, full width, white, 34px padding)
+   ========================================================================== */
+.dah-app-header {
+  height: 69px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.dah-app-brand {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.3px;
+  margin: 0;
+  line-height: 1;
+}
+
+.dah-app-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.dah-app-nav-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  font-family: var(--font-family);
+}
+
+.dah-app-nav-link:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.dah-app-nav-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   Main Content Container (34px margin, 32px top, #F7F7F7 bg)
+   ========================================================================== */
+.dah-page-wrapper {
+  background-color: var(--color-background);
+  min-height: calc(100vh - 69px);
+  padding: 32px 34px 48px;
+}
+
+.dah-card-container {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-card);
+  border-radius: 9px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Primary Navigation Tabs (50px high, 3 equal columns, 3px teal underline)
+   ========================================================================== */
+.dah-tabs-bar {
+  display: flex;
+  width: 100%;
+  height: 50px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0;
+  margin: 0;
+}
+
+.dah-tab-item {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6d7175;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  padding: 0 16px;
+  user-select: none;
+  font-family: var(--font-family);
+}
+
+.dah-tab-item:hover:not(.active) {
+  color: var(--color-text);
+  background-color: #fafafa;
+}
+
+.dah-tab-item.active {
+  color: var(--color-primary);
+  border-bottom: 3px solid var(--color-primary);
+  background-color: var(--color-surface);
+}
+
+.dah-tab-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* ==========================================================================
+   Tab Content Area
+   ========================================================================== */
+.dah-tab-content-panel,
+.dah-tab-content {
+  padding: 28px 32px 36px;
+  background-color: var(--color-surface);
+}
+
+/* Settings Container */
+.dah-settings-container {
+  max-width: 680px;
+  width: 100%;
+}
+
+.dah-referral-table-container,
+.dah-product-discount-container {
+  width: 100%;
+}
+
+/* ==========================================================================
+   Section Headers & Typography
+   ========================================================================== */
+.dah-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dah-section-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dah-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+
+.dah-section-subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-subdued);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Primary Action Button (+ Add Product Rule) */
+.dah-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  min-width: 144px;
+  padding: 0 14px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.dah-btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.dah-btn-primary:active {
+  background-color: var(--color-primary-active);
+  transform: translateY(1px);
+}
+
+.dah-btn-primary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--color-primary-focus);
+}
+
+.dah-btn-primary:disabled {
+  background-color: #c9cccf;
+  color: #8c9196;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Secondary Button */
+.dah-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  padding: 0 14px;
+  background-color: #ffffff;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  text-decoration: none;
+}
+
+.dah-btn-secondary:hover {
+  background-color: #f6f6f7;
+  border-color: #c9c9c9;
+}
+
+.dah-btn-secondary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Product Discount Rules — Data Table
+   ========================================================================== */
+.dah-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.dah-pdr-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+  font-family: var(--font-family);
+}
+
+/* Table Header (39px high, #F7F7F7 bg, uppercase 12px semibold #555555) */
+.dah-pdr-table thead tr {
+  height: 39px;
+  background-color: var(--color-surface-subdued);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dah-pdr-table th {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  border: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Column Proportion widths */
+.col-product {
+  width: 40%;
+}
+
+.col-type {
+  width: 17%;
+}
+
+.col-value {
+  width: 9%;
+}
+
+.col-status {
+  width: 10%;
+}
+
+.col-date {
+  width: 15%;
+}
+
+.col-actions {
+  width: 9%;
+  text-align: left;
+}
+
+/* Table Body (73px row height, horizontal borders only, hover #FAFAFA) */
+.dah-pdr-table tbody tr {
+  height: 73px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.12s ease;
+}
+
+.dah-pdr-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.dah-pdr-table tbody tr:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.dah-pdr-table td {
+  padding: 12px 16px;
+  border: none;
+  vertical-align: middle;
+  color: var(--color-text);
+}
+
+/* Product Cell (40x40px thumbnail, product title 14px, SKU 12px #8A8A8A) */
+.dah-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dah-product-thumb {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 6px;
+  background-color: #e9e9e9;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: block;
+}
+
+.dah-product-thumb-placeholder {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 6px;
+  background: #e9e9e9;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a8a8a;
+}
+
+.dah-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.dah-product-title {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dah-product-sku {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  line-height: 1.2;
+}
+
+/* Type Cell */
+.dah-type-cell {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+/* Value Cell (Teal #008790, clickable) */
+.dah-value-cell {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-primary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-family);
+  transition: color 0.15s ease, text-decoration 0.15s ease;
+  display: inline-block;
+}
+
+.dah-value-cell:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+.dah-value-cell:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Status Badges (Active: mint #E4F7F1 / teal #147D70; Draft: #F1F1F1 / #666666) */
+.dah-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 4px;
+  line-height: 1.2;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.05s ease;
+  font-family: var(--font-family);
+  user-select: none;
+}
+
+.dah-status-badge:hover {
+  opacity: 0.85;
+}
+
+.dah-status-badge:active {
+  transform: scale(0.98);
+}
+
+.dah-status-badge:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.dah-status-badge.active {
+  background-color: var(--color-success-background);
+  color: var(--color-success-text);
+}
+
+.dah-status-badge.draft {
+  background-color: var(--color-draft-background);
+  color: var(--color-draft-text);
+}
+
+/* Date Cell */
+.dah-date-cell {
+  font-size: 14px;
+  font-weight: 400;
+  color: #333333;
+}
+
+/* Action Controls (33x33px square icon buttons, 7-8px gap) */
+.dah-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dah-icon-btn {
+  width: 33px;
+  height: 33px;
+  min-width: 33px;
+  border-radius: 6px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+  padding: 0;
+}
+
+.dah-icon-btn:active {
+  transform: scale(0.96);
+}
+
+.dah-icon-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.dah-icon-btn-edit {
+  background-color: #f1f1f1;
+  color: #444444;
+}
+
+.dah-icon-btn-edit:hover {
+  background-color: #e5e5e5;
+  color: #111111;
+}
+
+.dah-icon-btn-delete {
+  background-color: var(--color-danger-background);
+  color: var(--color-danger);
+}
+
+.dah-icon-btn-delete:hover {
+  background-color: var(--color-danger-background-hover);
+  color: #c61118;
+}
+
+.dah-icon-svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+/* Code Pills & Badges */
+code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  background-color: #f1f2f3;
+  color: #202223;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e1e3e5;
+}
+
+/* Modal Focus states & Teal overrides */
+.dah-modal-primary-btn button,
+.Polaris-Button--variantPrimary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.dah-modal-primary-btn button:hover,
+.Polaris-Button--variantPrimary:hover {
+  background-color: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
+}
+
+/* Polaris Text field teal focus ring */
+.Polaris-TextField__Input:focus,
+.Polaris-Select__Input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px var(--color-primary-focus) !important;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .dah-app-header,
+  header.Polaris-Box {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  .dah-page-wrapper {
+    padding: 20px 20px 36px;
+  }
+  .dah-tab-content {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dah-app-header,
+  header.Polaris-Box > div {
+    height: auto !important;
+    min-height: 60px;
+    padding: 14px 0;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+  .dah-app-header,
+  header.Polaris-Box {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .dah-page-wrapper {
+    padding: 16px 12px 24px;
+  }
+  .dah-tab-item {
+    font-size: 12px;
+    padding: 0 8px;
+  }
+  .dah-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .dah-btn-primary {
+    width: 100%;
+  }
+}

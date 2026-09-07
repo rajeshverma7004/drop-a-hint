@@ -1,0 +1,375 @@
+{%- liquid
+  assign selected_variant = product.selected_or_first_available_variant
+  assign current_price = selected_variant.price | money
+  assign compare_price = ''
+  if selected_variant.compare_at_price and selected_variant.compare_at_price > selected_variant.price
+    assign compare_price = selected_variant.compare_at_price | money
+  endif
+-%}
+
+<div id="dah-banner-{{ block.id }}" style="display: none; width: 100%; box-sizing: border-box; background-color: {{ block.settings.banner_bg }}; color: {{ block.settings.banner_text }}; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-family: sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+  <p id="dah-banner-message-{{ block.id }}" style="margin: 0 0 10px 0; font-size: 16px; font-weight: 500;"></p>
+  <button id="dah-refer-now-{{ block.id }}" style="background-color: {{ block.settings.button_bg }}; color: {{ block.settings.button_text }}; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px;">
+    Refer Now
+  </button>
+  <span
+    id="dah-price-data-{{ block.id }}"
+    data-price="{{ current_price | escape }}"
+    data-compare-at-price="{{ compare_price | escape }}"
+    data-variant-id="{{ selected_variant.id }}"
+    style="display:none"
+  ></span>
+</div>
+
+<div id="dah-modal-{{ block.id }}" class="dah-popup-model" style="display: none; position: fixed; z-index: 2147483647; left: 0; top: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; box-sizing: border-box; padding: 20px;">
+  <div style="background-color: #fff; margin: auto; padding: 25px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-family: sans-serif; position: relative; max-height: 90vh; overflow-y: auto;">
+    <span id="dah-close-modal-{{ block.id }}" style="position: absolute; right: 20px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; color: #666;">&times;</span>
+    <div style="display: flex; align-items: center; gap: 10px; margin-top: 0; margin-bottom: 15px;">
+      <h2 style="margin: 0; color: #333; font-size: 22px;">Refer a Friend</h2>
+    </div>
+    <form id="dah-refer-form-{{ block.id }}">
+      <div style="margin-bottom: 15px;">
+        <label for="dah-sender-name-{{ block.id }}" style="display: block; margin-bottom: 5px; color: #555; font-size: 14px;">Your Name</label>
+        <input type="text" id="dah-sender-name-{{ block.id }}" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label for="dah-sender-email-{{ block.id }}" style="display: block; margin-bottom: 5px; color: #555; font-size: 14px;">Your Email</label>
+        <input type="email" id="dah-sender-email-{{ block.id }}" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label for="dah-receiver-name-{{ block.id }}" style="display: block; margin-bottom: 5px; color: #555; font-size: 14px;">Friend's Name</label>
+        <input type="text" id="dah-receiver-name-{{ block.id }}" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label for="dah-receiver-email-{{ block.id }}" style="display: block; margin-bottom: 5px; color: #555; font-size: 14px;">Friend's Email</label>
+        <input type="email" id="dah-receiver-email-{{ block.id }}" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+      </div>
+      <button type="submit" id="dah-submit-referral-{{ block.id }}" style="width: 100%; background-color: {{ block.settings.button_bg }}; color: {{ block.settings.button_text }}; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 16px;">
+        Submit Referral
+      </button>
+      <div id="dah-form-msg-{{ block.id }}" style="margin-top: 15px; text-align: center; font-size: 14px; display: none;"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function() {
+    function getStoredReferralToken() {
+      try {
+        var urlParams = new URLSearchParams(window.location.search);
+        var urlToken = urlParams.get('dah_ref') || urlParams.get('referral') || urlParams.get('ref');
+        if (urlToken) return urlToken;
+
+        var localToken = localStorage.getItem('dah_ref_token');
+        if (localToken) return localToken;
+
+        var sessionToken = sessionStorage.getItem('dah_ref');
+        if (sessionToken) return sessionToken;
+
+        var match = document.cookie.match(/(?:^|;\s*)dah_ref=([^;]+)/);
+        if (match) return decodeURIComponent(match[1]);
+      } catch(e) {}
+      return null;
+    }
+
+    function persistReferralToken(refToken) {
+      if (!refToken) return;
+      try {
+        localStorage.setItem('dah_ref_token', refToken);
+        sessionStorage.setItem('dah_ref', refToken);
+        document.cookie = "dah_ref=" + encodeURIComponent(refToken) + "; path=/; max-age=2592000; SameSite=Lax";
+        console.log('[Drop A Hint] Referral attribution saved:', refToken);
+      } catch (err) {
+        console.warn('[Drop A Hint] Storage write warning:', err);
+      }
+    }
+
+    function syncCartAttributes(refToken) {
+      if (!refToken) return;
+      // Proactively sync referral token with Shopify Cart attributes
+      try {
+        fetch('/cart/update.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            attributes: {
+              dah_ref: refToken,
+              referral: refToken
+            }
+          })
+        }).catch(function() {});
+      } catch(e) {}
+    }
+
+    function attachReferralToForms(refToken) {
+      if (!refToken) return;
+      try {
+        var forms = document.querySelectorAll('form[action*="/cart/add"]');
+        forms.forEach(function(f) {
+          if (!f.querySelector('input[name="attributes[dah_ref]"]')) {
+            var attrInput = document.createElement('input');
+            attrInput.type = 'hidden';
+            attrInput.name = 'attributes[dah_ref]';
+            attrInput.value = refToken;
+            f.appendChild(attrInput);
+          }
+          if (!f.querySelector('input[name="properties[_dah_ref]"]')) {
+            var propInput = document.createElement('input');
+            propInput.type = 'hidden';
+            propInput.name = 'properties[_dah_ref]';
+            propInput.value = refToken;
+            f.appendChild(propInput);
+          }
+        });
+      } catch(e) {}
+    }
+
+    // Intercept form submissions to guarantee attribution on Add to Cart
+    function setupFormInterception(refToken) {
+      if (!refToken) return;
+      document.addEventListener('submit', function(e) {
+        var form = e.target;
+        if (form && form.action && form.action.indexOf('/cart/add') !== -1) {
+          if (!form.querySelector('input[name="attributes[dah_ref]"]')) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'attributes[dah_ref]';
+            input.value = refToken;
+            form.appendChild(input);
+          }
+          if (!form.querySelector('input[name="properties[_dah_ref]"]')) {
+            var prop = document.createElement('input');
+            prop.type = 'hidden';
+            prop.name = 'properties[_dah_ref]';
+            prop.value = refToken;
+            form.appendChild(prop);
+          }
+        }
+      }, true);
+    }
+
+    var currentRefToken = getStoredReferralToken();
+    if (currentRefToken) {
+      persistReferralToken(currentRefToken);
+      syncCartAttributes(currentRefToken);
+      attachReferralToForms(currentRefToken);
+      setupFormInterception(currentRefToken);
+    }
+
+    // Auto apply discount if discount parameter is in URL
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      var discountCode = urlParams.get('discount');
+      if (discountCode) {
+        localStorage.setItem('dah_discount_code', discountCode);
+        fetch('/discount/' + encodeURIComponent(discountCode), { method: 'GET', mode: 'no-cors' }).catch(function() {});
+      }
+    } catch(e) {}
+
+    function initBlock() {
+      var blockId = "{{ block.id }}";
+      var banner = document.getElementById('dah-banner-' + blockId);
+      var bannerMsg = document.getElementById('dah-banner-message-' + blockId);
+      var modal = document.getElementById('dah-modal-' + blockId);
+      var referBtn = document.getElementById('dah-refer-now-' + blockId);
+      var closeBtn = document.getElementById('dah-close-modal-' + blockId);
+      var form = document.getElementById('dah-refer-form-' + blockId);
+      var submitBtn = document.getElementById('dah-submit-referral-' + blockId);
+      var formMsg = document.getElementById('dah-form-msg-' + blockId);
+
+      if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
+
+      if (currentRefToken) {
+        attachReferralToForms(currentRefToken);
+      }
+
+      var priceDataEl = document.getElementById('dah-price-data-' + blockId);
+
+      document.addEventListener('variant:change', function(e) {
+        var variant = e?.detail?.variant;
+        if (!variant || !priceDataEl) return;
+
+        var newPrice = variant.price_formatted || variant.price_with_currency || '';
+        var newCompareAt =
+          variant.compare_at_price && variant.compare_at_price > variant.price
+            ? (variant.compare_at_price_formatted || variant.compare_at_price_with_currency || '')
+            : '';
+
+        priceDataEl.dataset.price         = newPrice;
+        priceDataEl.dataset.compareAtPrice = newCompareAt;
+        priceDataEl.dataset.variantId      = variant.id || '';
+      });
+
+      // Fetch settings via App Proxy
+      var productId = "{{ product.id }}";
+      var fetchUrl = productId ? '/apps/drop-a-hint?action=get_settings&productId=' + encodeURIComponent(productId) : '/apps/drop-a-hint?action=get_settings';
+
+      fetch(fetchUrl)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data && bannerMsg) {
+            var discountStr = data.discountType === 'percentage' 
+              ? data.discountValue + '%' 
+              : '$' + data.discountValue;
+              
+            bannerMsg.innerText = 'Refer this product to your friends and get a discount of ' + discountStr + ' when your friend purchases this product.';
+            if (banner) banner.style.display = 'block';
+          }
+        })
+        .catch(function(err) {
+          console.error('[Drop A Hint] Error fetching settings:', err);
+          if (bannerMsg) {
+            bannerMsg.innerText = 'Refer this product to your friends and get a special discount!';
+            if (banner) banner.style.display = 'block';
+          }
+        });
+
+      if (referBtn) {
+        referBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (modal) modal.style.display = 'flex';
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          if (modal) modal.style.display = 'none';
+        });
+      }
+
+      window.addEventListener('click', function(e) {
+        if (modal && e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Submitting...';
+          }
+          if (formMsg) formMsg.style.display = 'none';
+          
+          var priceDataEl = document.getElementById('dah-price-data-' + blockId);
+          var livePrice = priceDataEl ? priceDataEl.dataset.price : "{{ selected_variant.price | money }}";
+          var liveCompareAtPrice = priceDataEl ? priceDataEl.dataset.compareAtPrice : "{{ compare_price }}";
+
+          var payload = {
+            senderName: document.getElementById('dah-sender-name-' + blockId)?.value || '',
+            senderEmail: document.getElementById('dah-sender-email-' + blockId)?.value || '',
+            referrerCustomerId: "{% if customer %}{{ customer.id }}{% endif %}",
+            receiverName: document.getElementById('dah-receiver-name-' + blockId)?.value || '',
+            receiverEmail: document.getElementById('dah-receiver-email-' + blockId)?.value || '',
+            productUrl: window.location.href,
+            productId: "{{ product.id }}",
+            productTitle: "{{ product.title | escape }}",
+            productPrice: livePrice,
+            productCompareAtPrice: liveCompareAtPrice || '',
+            productImage: "{{ product.featured_image | image_url: width: 600 }}"
+          };
+
+          fetch('/apps/drop-a-hint?action=submit_referral', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+          })
+          .then(function(res) {
+            return res.text().then(function(text) {
+              try {
+                return JSON.parse(text);
+              } catch(e) {
+                console.error('[Drop A Hint] Server returned non-JSON response:', text);
+                return { success: false, error: 'Server error (' + res.status + '). Please check app configuration.' };
+              }
+            });
+          })
+          .then(function(data) {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerText = 'Submit Referral';
+            }
+            
+            if (data && data.success) {
+              if (formMsg) {
+                formMsg.style.color = '#008060';
+                formMsg.innerText = data.message || 'Referral submitted! An invitation email has been sent to your friend.';
+                formMsg.style.display = 'block';
+              }
+              form.reset();
+              setTimeout(function() {
+                if (modal) modal.style.display = 'none';
+                if (formMsg) formMsg.style.display = 'none';
+              }, 2500);
+            } else {
+              if (formMsg) {
+                formMsg.style.color = '#d32f2f';
+                formMsg.innerText = (data && (data.error || data.message)) ? (data.error || data.message) : 'Could not submit referral.';
+                formMsg.style.display = 'block';
+              }
+            }
+          })
+          .catch(function(err) {
+            console.error('[Drop A Hint] Submission error:', err);
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerText = 'Submit Referral';
+            }
+            if (formMsg) {
+              formMsg.style.color = '#d32f2f';
+              formMsg.innerText = err.message || 'An unexpected error occurred. Please try again.';
+              formMsg.style.display = 'block';
+            }
+          });
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initBlock);
+    } else {
+      initBlock();
+    }
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Drop a Hint Banner",
+  "target": "section",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "color",
+      "id": "banner_bg",
+      "label": "Banner Background Color",
+      "default": "#f4f6f8"
+    },
+    {
+      "type": "color",
+      "id": "banner_text",
+      "label": "Banner Text Color",
+      "default": "#202223"
+    },
+    {
+      "type": "color",
+      "id": "button_bg",
+      "label": "Button Background Color",
+      "default": "#008060"
+    },
+    {
+      "type": "color",
+      "id": "button_text",
+      "label": "Button Text Color",
+      "default": "#ffffff"
+    }
+  ]
+}
+{% endschema %}
