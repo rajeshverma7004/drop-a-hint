@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model Referral {
+  id                    Int       @id @default(autoincrement())
+  shop                  String
+  senderName            String
+  senderEmail           String
+  referrerCustomerId    String?
+  receiverName          String
+  receiverEmail         String
+  productUrl            String
+  productId             String?
+  productTitle          String?
+  token                 String?   @unique
+  rewardType            String    @default("percentage")
+  rewardValue           String    @default("15")
+  discountCode          String?
+  discountId            String?
+  discountAmount        String?
+  orderStatus           String    @default("Pending")
+  rewardStatus          String    @default("Not Rewarded")
+  orderId               String?
+  referredOrderId       String?
+  orderNumber           String?
+  referredOrderNumber   String?
+  referredCustomerId    String?
+  referredCustomerEmail String?
+  orderAmount           String?
+  paymentStatus         String?
+  rewardIssued          Boolean   @default(false)
+  rewardIssuedAt        DateTime?
+  rewardEmailSent       Boolean   @default(false)
+  rewardEmailSentAt     DateTime?
+  purchaseDate          DateTime?
+  expiryDate            DateTime?
+  couponSent            Boolean   @default(false)
+  minCartAmount         String?
+  maxUses               Int       @default(1)
+  usedCount             Int       @default(0)
+  redeemedAt            DateTime?
+  redeemingOrderId      String?
+  redeemingOrderNumber  String?
+  // Priority 0 matching: store Shopify customer ID once known
+  shopifyCustomerId     String?
+  // Formal timestamp of when the referral order was completed
+  completedAt           DateTime?
+  // Diagnostic failure reason / lifecycle state (e.g. WAITING_FOR_ORDER, PAYMENT_NOT_CONFIRMED, REWARDED)
+  failureReason         String?
+  // Concurrency & Idempotency processing state: PENDING | PROCESSING | ISSUED | EMAIL_SENT | FAILED
+  rewardProcessingState String    @default("PENDING")
+  // Timestamp when atomic processing lock was acquired
+  processingLockAt      DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @default(now()) @updatedAt
+
+  @@index([shop])
+  @@index([token])
+  @@index([orderId])
+  @@index([referredOrderId])
+  @@index([senderEmail])
+  @@index([receiverEmail])
+  @@index([orderStatus])
+  @@index([rewardProcessingState])
+}
+
+model ProcessedWebhook {
+  id        String   @id // Webhook ID from X-Shopify-Webhook-Id header
+  shop      String
+  topic     String
+  orderId   String?
+  createdAt DateTime @default(now())
+
+  @@index([shop, topic])
+  @@index([orderId])
+}
+
+model RewardIssuanceLog {
+  id           Int      @id @default(autoincrement())
+  shop         String
+  referralId   Int      @unique
+  orderId      String
+  discountCode String
+  discountId   String?
+  createdAt    DateTime @default(now())
+
+  @@unique([shop, referralId])
+  @@unique([shop, orderId])
+  @@index([shop, discountCode])
+}
+
+model Settings {
+  id                       Int      @id @default(autoincrement())
+  shop                     String   @unique
+  discountType             String   @default("percentage")
+  discountValue            String   @default("15")
+  expiryDays               Int      @default(30)
+  maxUses                  Int      @default(1)
+  minCartAmount            String   @default("0")
+  customMessage            String?
+  senderEmail              String?
+  emailSubject             String?
+  confirmationSenderEmail  String?
+  confirmationEmailSubject String?
+}
+
+model ProductDiscountRule {
+  id               Int      @id @default(autoincrement())
+  shop             String
+  shopifyProductId String
+  productTitle     String
+  productImage     String?
+  discountType     String   // "percentage" | "fixed"
+  discountValue    String
+  status           String   @default("Active")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([shop, shopifyProductId])
+}

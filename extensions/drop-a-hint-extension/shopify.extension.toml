@@ -1,0 +1,5 @@
+[[extensions]]
+name = "drop-a-hint-extension"
+type = "theme"
+handle = "drop-a-hint-extension"
+uid = "a0f20cf7-b935-66ea-8b72-f6c11a076b65"
