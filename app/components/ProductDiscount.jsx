@@ -4,59 +4,8 @@ import { useFetcher } from "react-router";
 import { Modal, Text, Box } from "@shopify/polaris";
 import { AddProductDiscountModal } from "./AddProductDiscountModal";
 
-// High-Fidelity Reference Demo Rows (used when no database records exist)
-const DEFAULT_REFERENCE_RULES = [
-  {
-    id: 1,
-    shopifyProductId: "gid://shopify/Product/9050414776474",
-    productTitle: "The Collection Snowboard: Oxygen",
-    sku: "SKU-001",
-    productImage: "https://cdn.shopify.com/s/files/1/0762/8419/9066/files/Main_d624f226-0a89-4fe1-b333-0d1548b43c06.jpg?v=1784645002",
-    discountType: "percentage",
-    discountValue: "2",
-    status: "Active",
-    createdAt: "2026-07-28T10:00:00.000Z",
-  },
-  {
-    id: 2,
-    shopifyProductId: "gid://shopify/Product/9050414678170",
-    productTitle: "The Collection Snowboard: Hydrogen",
-    sku: "SKU-002",
-    productImage: "https://cdn.shopify.com/s/files/1/0762/8419/9066/files/Main_0a40b01b-5021-48c1-80d1-aa8ab4876d3d.jpg?v=1784645001",
-    discountType: "percentage",
-    discountValue: "10",
-    status: "Active",
-    createdAt: "2026-07-28T11:00:00.000Z",
-  },
-  {
-    id: 3,
-    shopifyProductId: "gid://shopify/Product/9050414645402",
-    productTitle: "The Collection Snowboard: Liquid",
-    sku: "SKU-003",
-    productImage: "https://cdn.shopify.com/s/files/1/0762/8419/9066/files/Main_b13e31e0-6394-4d07-8874-29c786b32930.jpg?v=1784645000",
-    discountType: "fixed",
-    discountValue: "101",
-    status: "Active",
-    createdAt: "2026-07-28T12:00:00.000Z",
-  },
-  {
-    id: 4,
-    shopifyProductId: "gid://shopify/Product/9050414612634",
-    productTitle: "The Collection Snowboard: Nitrogen",
-    sku: "SKU-004",
-    productImage: "https://cdn.shopify.com/s/files/1/0762/8419/9066/files/Main_1f0e4cf8-51f6-4d76-8809-7d08df04e578.jpg?v=1784644999",
-    discountType: "percentage",
-    discountValue: "5",
-    status: "Draft",
-    createdAt: "2026-07-29T09:00:00.000Z",
-  },
-];
-
 export function ProductDiscount({ initialRules = [], showToast }) {
-  // Initialize with initialRules from DB, or fallback to default reference rows if empty
-  const [rules, setRules] = useState(
-    initialRules && initialRules.length > 0 ? initialRules : DEFAULT_REFERENCE_RULES
-  );
+  const [rules, setRules] = useState(Array.isArray(initialRules) ? initialRules : []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editRule, setEditRule] = useState(null);
   const [deleteConfirmRule, setDeleteConfirmRule] = useState(null);
@@ -69,9 +18,7 @@ export function ProductDiscount({ initialRules = [], showToast }) {
 
   // Sync when initial data changes from server
   useEffect(() => {
-    if (initialRules && initialRules.length > 0) {
-      setRules(initialRules);
-    }
+    setRules(Array.isArray(initialRules) ? initialRules : []);
   }, [initialRules]);
 
   // Handle delete fetcher errors (success notification is handled on action execution)
@@ -246,7 +193,41 @@ export function ProductDiscount({ initialRules = [], showToast }) {
             </tr>
           </thead>
           <tbody>
-            {rules.map((rule, index) => {
+            {rules.length === 0 ? (
+              <tr role="row">
+                <td
+                  colSpan={6}
+                  style={{
+                    textAlign: "center",
+                    padding: "48px 16px",
+                    color: "var(--color-text-subdued)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 600,
+                        color: "var(--color-text)",
+                      }}
+                    >
+                      No product discount rules found
+                    </span>
+                    <span style={{ fontSize: "13px" }}>
+                      Click &ldquo;+ Add Product Rule&rdquo; above to set up custom discounts for specific products.
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              rules.map((rule, index) => {
               const sku = getProductSku(rule, index);
               const isActive = (rule.status || "").toLowerCase() === "active";
 
@@ -394,8 +375,9 @@ export function ProductDiscount({ initialRules = [], showToast }) {
                   </td>
                 </tr>
               );
-            })}
-          </tbody>
+            })
+          )}
+        </tbody>
         </table>
       </div>
 
