@@ -14,7 +14,7 @@ import { EmailSettings } from "../components/EmailSettings";
 import { ProductDetailModal } from "../components/ProductDetailModal";
 import { InstructionModal } from "../components/InstructionModal";
 import { SupportModal } from "../components/SupportModal";
-import { Toast, Box, InlineStack, Text, Button, Modal } from "@shopify/polaris";
+import { Toast, Text, Modal } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { useSaveBar } from "../context/SaveBarContext";
 
@@ -274,69 +274,14 @@ export default function Index() {
 
   return (
     <>
-      <TitleBar title="Drop A Hint" />
-
-      {/* Top Application Header (69px, White, 34px padding, 24px bold title, 14px text links, 24px spacing) */}
-      <Box
-        as="header"
-        background="bg-surface"
-        borderBlockEndWidth="025"
-        borderColor="border"
-        paddingInline="800"
-      >
-        <div
-          style={{
-            height: "69px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-          }}
-        >
-          <Text variant="headingXl" as="h1" fontWeight="bold">
-            Drop a Hint
-          </Text>
-
-          <nav aria-label="Quick Actions">
-            <InlineStack gap="600" align="end" blockAlign="center">
-              <Button
-                variant="plain"
-                onClick={() => setIsInstructionOpen(true)}
-                accessibilityLabel="Installation Instructions"
-              >
-                <span
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#555555",
-                    fontFamily:
-                      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                  }}
-                >
-                  Installation Instructions
-                </span>
-              </Button>
-              <Button
-                variant="plain"
-                onClick={() => setIsSupportOpen(true)}
-                accessibilityLabel="Support"
-              >
-                <span
-                  style={{
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#555555",
-                    fontFamily:
-                      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                  }}
-                >
-                  Support
-                </span>
-              </Button>
-            </InlineStack>
-          </nav>
-        </div>
-      </Box>
+      <TitleBar title="Drop A Hint">
+        <button onClick={() => setIsInstructionOpen(true)}>
+          Installation Instructions
+        </button>
+        <button onClick={() => setIsSupportOpen(true)}>
+          Support
+        </button>
+      </TitleBar>
 
       {/* Main Page Content Wrapper (34px margin, #F7F7F7 bg) */}
       <main className="dah-page-wrapper">
